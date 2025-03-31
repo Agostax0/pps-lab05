@@ -12,7 +12,14 @@ trait Course:
 
 object Course:
   // Factory method for creating Course instances
-  def apply(courseId: String, title: String, instructor: String, category: String): Course = ???
+  def apply(courseId: String, title: String, instructor: String, category: String): Course = CourseImpl(courseId, title, instructor, category)
+
+  private case class CourseImpl(
+              override val courseId: String,
+              override val title: String,
+              override val instructor: String,
+              override val category: String
+  ) extends Course
 /**
  * Manages courses and student enrollments on an online learning platform.
  */
@@ -86,8 +93,26 @@ end OnlineCoursePlatform
 
 object OnlineCoursePlatform:
   // Factory method for creating an empty platform instance
-  def apply(): OnlineCoursePlatform = ??? // Fill Here!
+  def apply(): OnlineCoursePlatform = OnlineCoursePlatformImpl() // Fill Here!
 
+  private case class OnlineCoursePlatformImpl(var course: Sequence[Course] = Sequence.empty, var c2s: Sequence[(String,String)] = Sequence.empty) extends OnlineCoursePlatform:
+    override def addCourse(course: Course): Unit = this.course = Sequence.Cons(course, this.course)
+
+    override def getCourse(courseId: String): Optional[Course] = this.course.filter(entry => entry.courseId equals courseId).find(entry => true)
+
+    override def removeCourse(course: Course): Unit = this.course = this.course.filter(entry => !(entry equals course))
+
+    override def isCourseAvailable(courseId: String): Boolean = course.map(entry => entry.courseId).contains(courseId)
+
+    override def findCoursesByCategory(category: String): Sequence[Course] = course filter(entry => entry.category equals category)
+
+    override def getStudentEnrollments(studentId: String): Sequence[Course] = course filter (entry => c2s.filter((_,id) => id equals studentId).map((cId,_) => cId) contains entry.courseId )
+
+    override def enrollStudent(studentId: String, courseId: String): Unit = if isCourseAvailable(courseId) then c2s = Sequence.Cons((courseId,studentId), c2s)
+
+    override def unenrollStudent(studentId: String, courseId: String): Unit = c2s = c2s.filter((cId, sId) => !(cId.equals(courseId) && sId.equals(studentId)))
+
+    override def isStudentEnrolled(studentId: String, courseId: String): Boolean = !c2s.find((cId, sId) => (cId equals courseId) && (sId equals studentId)).isEmpty
 /**
  * Represents an online learning platform that offers courses and manages student enrollments.
  * Hints:
