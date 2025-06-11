@@ -98,11 +98,11 @@ object OnlineCoursePlatform:
   private case class OnlineCoursePlatformImpl(var course: Sequence[Course] = Sequence.empty, var c2s: Sequence[(String,String)] = Sequence.empty) extends OnlineCoursePlatform:
     override def addCourse(course: Course): Unit = this.course = Sequence.Cons(course, this.course)
 
-    override def getCourse(courseId: String): Optional[Course] = this.course.filter(entry => entry.courseId equals courseId).find(entry => true)
+    override def getCourse(courseId: String): Optional[Course] = this.course.find(entry => entry.courseId equals courseId)
 
     override def removeCourse(course: Course): Unit = this.course = this.course.filter(entry => !(entry equals course))
 
-    override def isCourseAvailable(courseId: String): Boolean = course.map(entry => entry.courseId).contains(courseId)
+    override def isCourseAvailable(courseId: String): Boolean = course.map(entry => entry.courseId) contains courseId
 
     override def findCoursesByCategory(category: String): Sequence[Course] = course filter(entry => entry.category equals category)
 
